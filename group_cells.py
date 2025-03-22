@@ -67,7 +67,10 @@ def main(input_dir, output_dir, num_bins):
     # Ensure the output directory exists
     os.makedirs(output_dir, exist_ok=True)
 
-    # Save the summed images. Optionally, you can normalize for visualization.
+    # Get the base name from the input directory
+    base_name = os.path.basename(os.path.normpath(input_dir))
+
+    # Save the summed images with the new naming scheme
     for i, sum_img in enumerate(sum_images):
         if sum_img is None:
             print(f"No images in bin {i+1}")
@@ -75,9 +78,10 @@ def main(input_dir, output_dir, num_bins):
         # Normalize summed image to the 0-255 range for saving as an 8-bit image
         norm_img = cv2.normalize(sum_img, None, 0, 255, cv2.NORM_MINMAX)
         norm_img = norm_img.astype(np.uint8)
-        output_path = os.path.join(output_dir, f"bin_{i+1}_summed.tif")
+        output_path = os.path.join(output_dir, f"{base_name}_bin_{i+1}_summed.tif")
         cv2.imwrite(output_path, norm_img)
         print(f"Saved summed image for bin {i+1} at {output_path}")
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
