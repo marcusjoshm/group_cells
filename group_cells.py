@@ -75,12 +75,13 @@ def main(input_dir, output_dir, num_bins):
         if sum_img is None:
             print(f"No images in bin {i+1}")
             continue
-        # Normalize summed image to the 0-255 range for saving as an 8-bit image
-        norm_img = cv2.normalize(sum_img, None, 0, 255, cv2.NORM_MINMAX)
-        norm_img = norm_img.astype(np.uint8)
+        # Normalize summed image to the 0-65535 range for saving as a 16-bit image
+        norm_img = cv2.normalize(sum_img, None, 0, 65535, cv2.NORM_MINMAX)
+        norm_img = norm_img.astype(np.uint16)
         output_path = os.path.join(output_dir, f"{base_name}_bin_{i+1}_summed.tif")
         cv2.imwrite(output_path, norm_img)
         print(f"Saved summed image for bin {i+1} at {output_path}")
+
 
 
 if __name__ == '__main__':
