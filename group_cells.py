@@ -4,9 +4,9 @@ import numpy as np
 import argparse
 from sklearn.mixture import GaussianMixture
 
-def compute_total_intensity(img):
-    """Compute the sum of all pixel intensities in the image."""
-    return np.sum(img)
+def compute_max_intensity(img):
+    """Compute the maximum pixel intensity in the image."""
+    return np.max(img)
 
 def main(input_dir, output_dir, num_bins):
     # Get all image file names (adjust extensions as needed)
@@ -18,29 +18,29 @@ def main(input_dir, output_dir, num_bins):
         print("No images found in directory:", input_dir)
         return
 
-    # List to store tuples of (filename, total_intensity, image)
+    # List to store tuples of (filename, max_intensity, image)
     image_data = []
     for image_file in image_files:
         img = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
         if img is None:
             print(f"Warning: Unable to read {image_file}. Skipping.")
             continue
-        total_intensity = compute_total_intensity(img)
-        image_data.append((image_file, total_intensity, img))
+        max_intensity = compute_max_intensity(img)
+        image_data.append((image_file, max_intensity, img))
     
     if not image_data:
         print("No valid images to process.")
         return
 
-    # Prepare an array of total intensities for GMM clustering
+    # Prepare an array of maximum intensities for GMM clustering
     intensities = np.array([data[1] for data in image_data]).reshape(-1, 1)
 
-    # Fit Gaussian Mixture Model to cluster images based on total intensity
+    # Fit Gaussian Mixture Model to cluster images based on maximum intensity
     gmm = GaussianMixture(n_components=num_bins, random_state=0)
     gmm.fit(intensities)
     labels = gmm.predict(intensities)
 
-    # Remap cluster labels so that they are ordered by increasing intensity
+    # Remap cluster labels so that they are ordered by increasing maximum intensity
     cluster_means = {}
     for label in range(num_bins):
         cluster_values = intensities[labels == label]
@@ -55,7 +55,7 @@ def main(input_dir, output_dir, num_bins):
     sum_images = [None] * num_bins
 
     # Group images using the mapped labels and sum them
-    for idx, (filename, total_intensity, img) in enumerate(image_data):
+    for idx, (filename, max_intensity, img) in enumerate(image_data):
         original_label = labels[idx]
         mapped_label = label_mapping[original_label]
         if sum_images[mapped_label] is None:
@@ -80,7 +80,7 @@ def main(input_dir, output_dir, num_bins):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="Group cell images based on total fluorescence intensity using GMM clustering and sum them."
+        description="Group cell images based on maximum fluorescence intensity using GMM clustering and sum them."
     )
     parser.add_argument("input_dir", help="Directory containing cell images.")
     parser.add_argument("output_dir", help="Directory to save output summed images.")
